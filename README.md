@@ -7,6 +7,16 @@ Uses [jdeb](https://github.com/tcurdt/jdeb) to build the debian packages.
 
 [![Clojars Project](http://clojars.org/lein-jdeb/latest-version.svg)](http://clojars.org/lein-jdeb)
 
+## Installation
+
+###With Leiningen 2
+
+Add `[lein-jdeb "0.1.2"]` to your project's `:plugins`.
+
+###With Leiningen 1
+
+Add `[lein-jdeb "0.1.2"]` to your project's `:dev-dependencies`.
+
 ##  Usage
 
 Add `:deb-maintainer` to your `project.clj` to add the [Maintainer](https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Maintainer) field for the package
