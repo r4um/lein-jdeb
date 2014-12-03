@@ -37,7 +37,7 @@
   [p v]
   (str p "_" v ".deb"))
 
-(defn deb
+(defn jdeb
   "Create debian package from uberjar"
   [project & args]
   (let [package (project :name)
