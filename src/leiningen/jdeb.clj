@@ -1,4 +1,4 @@
-(ns leiningen.deb
+(ns leiningen.jdeb
   (:require [leiningen.core.main :as lm]
             [leiningen.uberjar :as uj]
             [clojure.java.io :as io]
