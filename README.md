@@ -5,7 +5,7 @@ Uses [jdeb](https://github.com/tcurdt/jdeb) to build the debian packages.
 
 ##  Leiningen
 
-[![Clojars Project](http://clojars.org/lein-jdeb/latest-version.svg)](http://clojars.org/lein-deb)
+[![Clojars Project](http://clojars.org/lein-jdeb/latest-version.svg)](http://clojars.org/lein-jdeb)
 
 ##  Usage
 
