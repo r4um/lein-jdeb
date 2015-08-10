@@ -1,14 +1,14 @@
 (ns leiningen.jdeb
   (:require [leiningen.core.main :as lm]
-            [leiningen.uberjar :as uj]
             [clojure.java.io :as io]
             [me.raynes.fs :refer [temp-dir file]])
   (:import [org.vafer.jdeb DebMaker Console]
-           [org.vafer.jdeb.producers DataProducerFile DataProducerLink])
+           [org.vafer.jdeb.mapping Mapper PermMapper NullMapper]
+           [org.vafer.jdeb.producers DataProducerFile DataProducerDirectory DataProducerPathTemplate])
   (:gen-class))
 
 (def console
-  (reify org.vafer.jdeb.Console
+  (reify Console
     (info [_ m]
       (lm/info m))
     (warn [_ m]
@@ -37,31 +37,54 @@
   [p v]
   (str p "_" v ".deb"))
 
+(defmulti mapper :type)
+
+(defmethod mapper :perm [m]
+  (PermMapper. (:uid m -1) (:gid m -1) (:user m) (:group m) (:filemode m "") (:dirmode m "") (:strip m 0) (:prefix m)))
+
+(defmethod mapper :null [_]
+  NullMapper/INSTANCE)
+
+(defmethod mapper :default [_] nil)
+
+(defmulti process-data :type)
+
+(defmethod process-data :file [data]
+  (DataProducerFile. (io/file (:src data)) (:dst data)
+                     (into-array String (:includes data))
+                     (into-array String (:excludes data))
+                     (into-array Mapper [(mapper (:mapper data))])))
+
+(defmethod process-data :directory [data]
+  (DataProducerDirectory. (io/file (:src data))
+                          (into-array String (:includes data))
+                          (into-array String (:excludes data))
+                          (into-array Mapper [(mapper (:mapper data))])))
+
+(defmethod process-data :template [data]
+  (DataProducerPathTemplate. (into-array String (:paths data))
+                             (into-array String (:includes data))
+                             (into-array String (:excludes data))
+                             (into-array Mapper [(mapper (:mapper data))])))
+
 (defn jdeb
-  "Create debian package from uberjar"
+  "Create debian package from project.clj configuration"
   [project & args]
-  (let [package (project :name)
+  (let [conf (project :jdeb)
+        package (project :name)
         version (project :version)
         description (project :description)
         homepage (project :url)
-        control-dir (project :deb-control-dir)
-        maintainer (project :deb-maintainer)
-        architecture (project :deb-architecture "all")
-        section (project :deb-section "java")
-        depends (project
-                 :deb-depends
-                 "default-jre | java7-runtime | java6-runtime")
-        priority (project :deb-priority "optional")
+        control-dir (:deb-control-dir conf)
+        maintainer (:deb-maintainer conf)
+        architecture (:deb-architecture conf "all")
+        section (:deb-section conf "java")
+        depends (:deb-depends conf)
+        priority (:deb-priority conf "optional")
         pkg-name (deb-pkg-name package version)
-        uberjar (uj/uberjar project)
-        uberjar-name (.getName (io/file uberjar))
-        uberjar-pkg-path (.getPath (io/file "usr" "share" "java" uberjar-name))
-        uberjar-symlink-name (str package ".jar")
-        uberjar-symlink-pkg-path (.getPath (io/file "usr" "share" "java" uberjar-symlink-name))
-        df (DataProducerFile. (io/file uberjar) uberjar-pkg-path nil nil nil)
-        dl (DataProducerLink. uberjar-symlink-pkg-path uberjar-name true nil nil nil)
-        dm (DebMaker. console [df dl] nil)]
-
+        producers (mapv process-data (:data-set conf))
+        confs (mapv process-data (filter :conffile (:data-set conf)))
+        dm (DebMaker. console producers confs)]
     ;; If user specified control dir use that, else create control in temp
     ;; directory with minimum required control fields
     (if control-dir
@@ -70,7 +93,8 @@
                    (create-temp-control
                     architecture maintainer priority version)))
     (.setDeb dm (file pkg-name))
-    (.setDepends dm depends)
+    (if depends
+      (.setDepends dm depends))
     (.setDescription dm description)
     (.setHomepage dm homepage)
     (.setPackage dm package)
