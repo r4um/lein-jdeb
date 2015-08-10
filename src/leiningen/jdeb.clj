@@ -51,27 +51,21 @@
 
 (defmethod process-data :file [data]
   (DataProducerFile. (io/file (:src data)) (:dst data)
-                     (into-array String (:includes data)) (into-array String (:excludes data))
+                     (into-array String (:includes data))
+                     (into-array String (:excludes data))
                      (into-array Mapper [(mapper (:mapper data))])))
 
 (defmethod process-data :directory [data]
-  (DataProducerDirectory. (io/file (:src data)) (into-array String (:includes data)) (into-array String (:excludes data))
+  (DataProducerDirectory. (io/file (:src data))
+                          (into-array String (:includes data))
+                          (into-array String (:excludes data))
                           (into-array Mapper [(mapper (:mapper data))])))
 
 (defmethod process-data :template [data]
   (DataProducerPathTemplate. (into-array String (:paths data))
-                             (into-array String (:includes data)) (into-array String (:excludes data))
+                             (into-array String (:includes data))
+                             (into-array String (:excludes data))
                              (into-array Mapper [(mapper (:mapper data))])))
-
-(defn process-data-set [data-set]
-  (let [confs (atom [])
-        producers (mapv (fn [data]
-                          (let [producer (process-data data)]
-                            (when (:conffile data)
-                              (swap! confs conj producer))
-                            producer))
-                        data-set)]
-    [producers @confs]))
 
 (defn jdeb
   "Create debian package from project.clj configuration"
@@ -88,7 +82,8 @@
         depends (:deb-depends conf)
         priority (:deb-priority conf "optional")
         pkg-name (deb-pkg-name package version)
-        [producers confs] (process-data-set (:data-set conf))
+        producers (mapv process-data (:data-set conf))
+        confs (mapv process-data (filter :conffile (:data-set conf)))
         dm (DebMaker. console producers confs)]
     ;; If user specified control dir use that, else create control in temp
     ;; directory with minimum required control fields
