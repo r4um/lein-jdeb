@@ -5,17 +5,18 @@ Uses [jdeb](https://github.com/tcurdt/jdeb) to build the debian packages.
 
 ##  Leiningen
 
+[![Dependencies Status](https://versions.deps.co/r4um/lein-jdeb/status.svg)](https://versions.deps.co/r4um/lein-jdeb)
 [![Clojars Project](http://clojars.org/lein-jdeb/latest-version.svg)](http://clojars.org/lein-jdeb)
 
 ## Installation
 
-###With Leiningen 2
+### With Leiningen 2
 
-Add `[lein-jdeb "0.1.2"]` to your project's `:plugins`.
+Add `[lein-jdeb "0.2.2"]` to your project's `:plugins`.
 
-###With Leiningen 1
+### With Leiningen 1
 
-Add `[lein-jdeb "0.1.2"]` to your project's `:dev-dependencies`.
+Add `[lein-jdeb "0.2.2"]` to your project's `:dev-dependencies`.
 
 ##  Usage
 
