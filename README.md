@@ -37,7 +37,7 @@ Other settings that are available and their defaults
 
 ## License
 
-Copyright © 2014 Pranay Kanwar
+Copyright © Pranay Kanwar
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
